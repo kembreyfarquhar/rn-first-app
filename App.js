@@ -4,33 +4,32 @@ import {
   Text,
   View,
   KeyboardAvoidingView,
-  TouchableOpacity,
   TextInput,
   Button,
   Keyboard,
   SafeAreaView,
   TouchableWithoutFeedback,
-  Platform
+  Platform,
+  Image,
+  TouchableOpacity
 } from "react-native";
+import GestureRecognizer from "react-native-swipe-gestures";
+import pancakes from "./images/pancakes.jpg";
 
 export default function App() {
-  const [adjectives, setAdjectives] = useState([
-    "happy",
-    "beautiful",
-    "strong",
-    "capable",
-    "whole"
-  ]);
-  const [displayText, setDisplayText] = useState(adjectives[0]);
-  const [inputText, setInputText] = useState("");
+  const [recipe, setRecipe] = useState({ title: "Pancakes" });
+  const [title, setTitle] = useState(recipe.title);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [hiddenEditTitle, setHiddenEditTitle] = useState(true);
 
-  function buttonPress() {
-    let index = adjectives.indexOf(displayText);
-    if (index === adjectives.length - 1) {
-      index = -1;
-    }
-    setDisplayText(adjectives[index + 1]);
-  }
+  const onSwipeLeft = () => {
+    alert("SWIPED");
+  };
+
+  const swipeConfig = {
+    velocityThreshold: 0.3,
+    directionalOffsetThreshold: 80
+  };
 
   return (
     <KeyboardAvoidingView
@@ -39,27 +38,135 @@ export default function App() {
     >
       <SafeAreaView style={styles.container}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{ alignItems: "center" }}>
-            <Text style={styles.displayText}>I am {displayText}!</Text>
-            <TouchableOpacity onPress={buttonPress}>
-              <View behavior="padding" style={styles.button}>
-                <Text>Next -></Text>
+          <View>
+            <GestureRecognizer onSwipe={onSwipeLeft}>
+              <Image source={pancakes} style={styles.image} />
+            </GestureRecognizer>
+            {editingTitle ? (
+              <View>
+                <TextInput
+                  onChangeText={title => setTitle(title)}
+                  value={title}
+                  style={styles.input}
+                  autoFocus={true}
+                />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-around"
+                  }}
+                >
+                  <Button
+                    title="Cancel"
+                    onPress={() => setEditingTitle(false)}
+                  />
+                  <Button
+                    title="Save"
+                    onPress={() => {
+                      setRecipe({ ...recipe, title });
+                      setEditingTitle(false);
+                    }}
+                  />
+                </View>
               </View>
-            </TouchableOpacity>
-            <Text>You, my darling, are all of these things and more.</Text>
-            <TextInput
-              placeholder="Add an adjective"
-              onChangeText={text => setInputText(text)}
-              value={inputText}
-              style={styles.input}
-            />
-            <Button
-              title="Submit"
-              onPress={() => {
-                adjectives.push(inputText);
-                setInputText("");
+            ) : (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between"
+                }}
+              >
+                <View>
+                  <GestureRecognizer onSwipe={onSwipeLeft}>
+                    <Text style={styles.displayText}>{recipe.title}</Text>
+                  </GestureRecognizer>
+                </View>
+
+                <View style={{ display: !hiddenEditTitle ? "none" : "flex" }}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setTitle(recipe.title);
+                      setEditingTitle(true);
+                    }}
+                    style={{ backgroundColor: "green", padding: 10 }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        fontWeight: "bold",
+                        color: "white"
+                      }}
+                    >
+                      Edit
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                paddingVertical: 10,
+                borderBottomColor: "grey",
+                borderBottomWidth: 1
               }}
-            />
+            >
+              <Text>Katie</Text>
+              <Text>45 minutes</Text>
+            </View>
+            <Text style={{ paddingVertical: 10 }}>Tags</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-evenly",
+                paddingBottom: 10,
+                borderBottomWidth: 1,
+                borderBottomColor: "grey"
+              }}
+            >
+              <Text>Breakfast</Text>
+              <Text>Brunch</Text>
+              <Text>Sweets</Text>
+            </View>
+            <Text
+              style={{
+                padding: 10,
+                fontSize: 20,
+                backgroundColor: "#047396",
+                color: "white",
+                fontWeight: "bold",
+                marginVertical: 20
+              }}
+            >
+              Ingredients
+            </Text>
+            <View>
+              <View style={styles.ingredientContainer}>
+                <View style={styles.ingredient}>
+                  <Text>Flour</Text>
+                </View>
+                <View style={styles.ingredient}>
+                  <Text>2 cups</Text>
+                </View>
+              </View>
+              <View style={styles.ingredientContainer}>
+                <View style={styles.ingredient}>
+                  <Text>Eggs</Text>
+                </View>
+                <View style={styles.ingredient}>
+                  <Text>2, large</Text>
+                </View>
+              </View>
+              <View style={styles.ingredientContainer}>
+                <View style={styles.ingredient}>
+                  <Text>Baking Powder</Text>
+                </View>
+                <View style={styles.ingredient}>
+                  <Text>1 tsp</Text>
+                </View>
+              </View>
+            </View>
           </View>
         </TouchableWithoutFeedback>
       </SafeAreaView>
@@ -75,7 +182,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   displayText: {
-    fontSize: 50
+    fontSize: 30
   },
   button: {
     backgroundColor: "salmon",
@@ -87,8 +194,26 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.5
   },
+  image: {
+    width: 350,
+    height: 250,
+    borderRadius: 8
+  },
   input: {
     marginTop: 30,
-    marginBottom: 10
+    marginBottom: 10,
+    borderColor: "grey",
+    borderWidth: 1,
+    fontSize: 20,
+    padding: 5
+  },
+  ingredientContainer: {
+    flexDirection: "row",
+    padding: 10,
+    backgroundColor: "darkgrey",
+    marginVertical: 8
+  },
+  ingredient: {
+    flex: 1
   }
 });
