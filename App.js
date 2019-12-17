@@ -23,7 +23,7 @@ export default function App() {
   const [hiddenEditTitle, setHiddenEditTitle] = useState(true);
 
   const onSwipeLeft = () => {
-    alert("SWIPED");
+    setHiddenEditTitle(false);
   };
 
   const swipeConfig = {
@@ -37,11 +37,13 @@ export default function App() {
       style={{ flex: 1 }}
     >
       <SafeAreaView style={styles.container}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <TouchableWithoutFeedback
+          disabled={!editingTitle}
+          onPress={Keyboard.dismiss}
+        >
           <View>
-            <GestureRecognizer onSwipe={onSwipeLeft}>
-              <Image source={pancakes} style={styles.image} />
-            </GestureRecognizer>
+            <Image source={pancakes} style={styles.image} />
+
             {editingTitle ? (
               <View>
                 <TextInput
@@ -58,13 +60,17 @@ export default function App() {
                 >
                   <Button
                     title="Cancel"
-                    onPress={() => setEditingTitle(false)}
+                    onPress={() => {
+                      setEditingTitle(false);
+                      setHiddenEditTitle(true);
+                    }}
                   />
                   <Button
                     title="Save"
                     onPress={() => {
                       setRecipe({ ...recipe, title });
                       setEditingTitle(false);
+                      setHiddenEditTitle(true);
                     }}
                   />
                 </View>
@@ -77,12 +83,12 @@ export default function App() {
                 }}
               >
                 <View>
-                  <GestureRecognizer onSwipe={onSwipeLeft}>
+                  <GestureRecognizer onSwipeLeft={onSwipeLeft}>
                     <Text style={styles.displayText}>{recipe.title}</Text>
                   </GestureRecognizer>
                 </View>
 
-                <View style={{ display: !hiddenEditTitle ? "none" : "flex" }}>
+                <View style={{ display: hiddenEditTitle ? "none" : "flex" }}>
                   <TouchableOpacity
                     onPress={() => {
                       setTitle(recipe.title);
